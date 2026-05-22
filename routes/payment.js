@@ -155,13 +155,14 @@ router.post("/check", async (req, res) => {
 
     // Call Bakong Open API
     const bakongRes = await _fetch(
-      `${BAKONG_API}/v1/check_transaction_by_md5?md5=${md5.trim()}`,
+      `${BAKONG_API}/v1/check_transaction_by_md5`,
       {
-        method:  "GET",
+        method:  "POST",
         headers: {
           "Authorization": `Bearer ${BAKONG_TOKEN}`,
           "Content-Type":  "application/json",
         },
+        body: JSON.stringify({ md5: md5.trim() }),
       }
     );
 
