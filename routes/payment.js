@@ -22,8 +22,7 @@ const MERCHANT_CITY = process.env.MERCHANT_CITY || "Phnom Penh";
 const BAKONG_TOKEN  = process.env.BAKONG_TOKEN  || "";
 
 // ── Bakong API base URL ───────────────────────────────────────
-// Using SIT (test) environment — production blocks non-Cambodia servers
-const BAKONG_API = "https://sit-api-bakong.nbc.gov.kh";
+const BAKONG_API = "https://api-bakong.nbc.gov.kh";
 
 // ─────────────────────────────────────────────────────────────
 // POST /api/payment/generate
@@ -50,6 +49,7 @@ router.post("/generate", async (req, res) => {
       merchantCategoryCode: "5999",
       purposeOfTransaction: "Tournament Entry Fee",
       expirationTimestamp:  expirationTimestamp,
+      billNumber:           "TRX" + Date.now(), // unique bill number → forces dynamic QR
     };
 
     const individualInfo = new IndividualInfo(
