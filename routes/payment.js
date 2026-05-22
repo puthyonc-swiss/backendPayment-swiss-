@@ -12,6 +12,9 @@ const express = require("express");
 const router  = express.Router();
 const { BakongKHQR, IndividualInfo, khqrData } = require("bakong-khqr");
 
+// Use built-in fetch (Node 18+) or fallback
+const _fetch = typeof fetch !== "undefined" ? fetch : require("node-fetch");
+
 // ── Config from .env ──────────────────────────────────────────
 const BAKONG_ID     = process.env.BAKONG_ID     || "puthyon_chandara@bkrt";
 const MERCHANT_NAME = process.env.MERCHANT_NAME || "Swiss System";
@@ -151,7 +154,7 @@ router.post("/check", async (req, res) => {
     }
 
     // Call Bakong Open API
-    const bakongRes = await fetch(
+    const bakongRes = await _fetch(
       `${BAKONG_API}/v1/check_transaction_by_md5?md5=${md5.trim()}`,
       {
         method:  "GET",
