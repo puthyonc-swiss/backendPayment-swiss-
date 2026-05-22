@@ -153,7 +153,7 @@ router.post("/check", async (req, res) => {
       });
     }
 
-    // Call Bakong Open API
+    // Call Bakong Open API — correct endpoint from NBC docs
     const bakongRes = await _fetch(
       `${BAKONG_API}/v1/check_transaction_by_md5`,
       {
@@ -161,12 +161,27 @@ router.post("/check", async (req, res) => {
         headers: {
           "Authorization": `Bearer ${BAKONG_TOKEN}`,
           "Content-Type":  "application/json",
+          "Accept":        "application/json",
         },
         body: JSON.stringify({ md5: md5.trim() }),
       }
     );
 
-    const bakongData = await bakongRes.json();
+    // Log raw response for debugging
+    const rawText = await bakongRes.text();
+    console.log(`💳 Bakong raw response:`, rawText.substring(0, 200));
+
+    let bakongData;
+    try {
+      bakongData = JSON.parse(rawText);
+    } catch (e) {
+      console.error("Bakong response is not JSON:", rawText.substring(0, 200));
+      return res.status(500).json({
+        success: false,
+        paid:    false,
+        message: "Bakong API returned unexpected response.",
+      });
+    }
 
     console.log(`💳 Bakong check | md5: ${md5} | response:`, JSON.stringify(bakongData));
 
