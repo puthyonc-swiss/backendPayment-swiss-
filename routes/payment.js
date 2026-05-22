@@ -22,7 +22,8 @@ const MERCHANT_CITY = process.env.MERCHANT_CITY || "Phnom Penh";
 const BAKONG_TOKEN  = process.env.BAKONG_TOKEN  || "";
 
 // ── Bakong API base URL ───────────────────────────────────────
-const BAKONG_API = "https://api-bakong.nbc.gov.kh";
+// Using SIT (test) environment — production blocks non-Cambodia servers
+const BAKONG_API = "https://sit-api-bakong.nbc.gov.kh";
 
 // ─────────────────────────────────────────────────────────────
 // POST /api/payment/generate
