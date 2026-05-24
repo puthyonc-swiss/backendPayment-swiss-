@@ -21,6 +21,11 @@ const MERCHANT_NAME = process.env.MERCHANT_NAME || "Swiss System";
 const MERCHANT_CITY = process.env.MERCHANT_CITY || "Phnom Penh";
 const BAKONG_TOKEN  = process.env.BAKONG_TOKEN  || "";
 
+// ── ADDED: Firebase Function URL ──────────────────────────────
+// Called when payment is confirmed to save to Firestore
+const APPROVE_PAYMENT_URL = "https://approvepayment-dujizfz2la-uc.a.run.app";
+const BOT_SECRET          = "swisssystem2026";
+
 // ── Bakong API base URL ───────────────────────────────────────
 const BAKONG_API = "https://api-bakong.nbc.gov.kh";
 
@@ -49,7 +54,7 @@ router.post("/generate", async (req, res) => {
       merchantCategoryCode: "5999",
       purposeOfTransaction: "Tournament Entry Fee",
       expirationTimestamp:  expirationTimestamp,
-      billNumber:           "TRX" + Date.now(), // unique bill number → forces dynamic QR
+      billNumber:           "TRX" + Date.now(),
     };
 
     const individualInfo = new IndividualInfo(
@@ -154,7 +159,7 @@ router.post("/check", async (req, res) => {
       });
     }
 
-    // Call Bakong Open API — correct endpoint from NBC docs
+    // Call Bakong Open API
     const bakongRes = await _fetch(
       `${BAKONG_API}/v1/check_transaction_by_md5`,
       {
@@ -192,6 +197,27 @@ router.post("/check", async (req, res) => {
       bakongData.responseCode === 0 &&
       bakongData.data
     ) {
+      // ── ADDED: Save payment to Firestore via Firebase Function ──
+      // This is the only change — everything else above is the same
+      try {
+        await _fetch(APPROVE_PAYMENT_URL, {
+          method:  "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            secret:    BOT_SECRET,
+            txnId:     bakongData.data.externalRef  || md5,
+            payerName: bakongData.data.fromFullName || "Unknown",
+            amount:    bakongData.data.amount       || 0,
+          }),
+        });
+        console.log(`✅ Payment saved to Firestore | md5: ${md5}`);
+      } catch (firebaseErr) {
+        // Do NOT fail the payment if Firestore save fails
+        // User still gets confirmed payment
+        console.error("Firestore save error:", firebaseErr.message);
+      }
+      // ── END ADDED ───────────────────────────────────────────────
+
       return res.status(200).json({
         success: true,
         paid:    true,
