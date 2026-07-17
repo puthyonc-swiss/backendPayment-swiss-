@@ -15,7 +15,7 @@ require("dotenv").config();
 const express      = require("express");
 const cors         = require("cors");
 const paymentRoutes = require("./routes/payment");
-const telegramRoutes = require("./routes/telegram");
+const telegramRoutes = require("./telegram");
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
