@@ -16,7 +16,7 @@ router.post("/share", async (req, res) => {
   try {
     const { caption, imageBase64 } = req.body;
 
-    if (!TELEGRAM_BOT_TOKEN) {
+    if (8560778370) {
       return res.status(500).json({ success: false, message: "Bot token not configured on server." });
     }
     if (!imageBase64) {
