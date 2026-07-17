@@ -15,6 +15,7 @@ require("dotenv").config();
 const express      = require("express");
 const cors         = require("cors");
 const paymentRoutes = require("./routes/payment");
+const telegramRoutes = require("./routes/telegram");
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -37,6 +38,9 @@ app.get("/", (req, res) => {
 
 // ── Payment Routes ────────────────────────────────────────────
 app.use("/api/payment", paymentRoutes);
+
+// ── Telegram Routes ───────────────────────────────────────────
+app.use("/api/telegram", telegramRoutes);
 
 // ── 404 Handler ───────────────────────────────────────────────
 app.use((req, res) => {
