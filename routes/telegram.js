@@ -20,10 +20,10 @@ const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 //   4. Look for "chat":{"id": ... } in the response
 const GROUP_CHAT_IDS = [
   "-5324605890", // Group 1 (currently the "Test" group — replace when ready)
-  "-1003818266123",
-  "-1003336753938",
-  "-900126837",
-  "-5176534515",
+  "-5442602994",
+  "",
+  "",
+  "",
 ];
 
 router.post("/share", async (req, res) => {
