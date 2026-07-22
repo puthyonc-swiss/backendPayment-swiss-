@@ -28,11 +28,73 @@ const GROUP_CHAT_IDS = [
 
 router.post("/share", async (req, res) => {
   try {
-    const { caption, imageBase64 } = req.body;
+    const { caption, imageBase64, imagesBase64 } = req.body;
 
     if (!TELEGRAM_BOT_TOKEN) {
       return res.status(500).json({ success: false, message: "Bot token not configured on server." });
     }
+
+    const targetGroups = GROUP_CHAT_IDS.filter(id => id && !id.startsWith("PASTE_"));
+
+    if (targetGroups.length === 0) {
+      return res.status(500).json({ success: false, message: "No group chat IDs configured yet." });
+    }
+
+    // ── Multi-page share: send as one Telegram album (sendMediaGroup) ──
+    // Caption only attaches to the first image — that's a Telegram limitation, not a bug.
+    if (Array.isArray(imagesBase64) && imagesBase64.length > 1) {
+      const buffers = imagesBase64.map(img =>
+        Buffer.from(img.replace(/^data:image\/\w+;base64,/, ""), "base64")
+      );
+
+      const sendResults = await Promise.all(
+        targetGroups.map(async (chatId) => {
+          try {
+            const formData = new FormData();
+            formData.append("chat_id", chatId);
+            const media = buffers.map((buf, i) => {
+              const attachName = `photo${i}`;
+              formData.append(attachName, new Blob([buf]), `report${i}.png`);
+              return {
+                type: "photo",
+                media: `attach://${attachName}`,
+                ...(i === 0 && caption ? { caption } : {}),
+              };
+            });
+            formData.append("media", JSON.stringify(media));
+
+            const telegramResponse = await fetch(
+              `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMediaGroup`,
+              { method: "POST", body: formData }
+            );
+            const result = await telegramResponse.json();
+            if (!result.ok) {
+              console.error(`Telegram sendMediaGroup error for group ${chatId}:`, result);
+              return { chatId, ok: false, error: result.description || "Telegram rejected the request." };
+            }
+            return { chatId, ok: true };
+          } catch (err) {
+            console.error(`Telegram sendMediaGroup send error for group ${chatId}:`, err);
+            return { chatId, ok: false, error: "Could not reach Telegram." };
+          }
+        })
+      );
+
+      const failed = sendResults.filter(r => !r.ok);
+      const succeeded = sendResults.filter(r => r.ok);
+
+      if (succeeded.length === 0) {
+        return res.status(502).json({ success: false, message: "Failed to send to all groups.", details: sendResults });
+      }
+
+      return res.json({
+        success: true,
+        message: `Sent to ${succeeded.length} of ${targetGroups.length} group(s).`,
+        failed: failed.length ? failed : undefined,
+      });
+    }
+
+    // ── Existing single-image path (unchanged) ──
     if (!imageBase64) {
       return res.status(400).json({ success: false, message: "No image provided." });
     }
@@ -40,13 +102,6 @@ router.post("/share", async (req, res) => {
     // Convert base64 string (e.g. "data:image/png;base64,....") into raw bytes
     const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, "");
     const imageBuffer = Buffer.from(base64Data, "base64");
-
-    // Send to every configured group. Placeholder IDs (not yet edited) are skipped.
-    const targetGroups = GROUP_CHAT_IDS.filter(id => id && !id.startsWith("PASTE_"));
-
-    if (targetGroups.length === 0) {
-      return res.status(500).json({ success: false, message: "No group chat IDs configured yet." });
-    }
 
     const sendResults = await Promise.all(
       targetGroups.map(async (chatId) => {
