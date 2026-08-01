@@ -20,8 +20,8 @@ const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 //   4. Look for "chat":{"id": ... } in the response
 const GROUP_CHAT_IDS = [
   "-5324605890", // Group 1 (currently the "Test" group — replace when ready)
-  "",
-  "",
+  "-1003336753938",
+  "-1003818266123",
   "",
   "",
 ];
