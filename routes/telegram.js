@@ -19,7 +19,7 @@ const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 //   3. Visit https://api.telegram.org/bot<TOKEN>/getUpdates
 //   4. Look for "chat":{"id": ... } in the response
 const GROUP_CHAT_IDS = [
-  "-1004432147751", // Group 1 (currently the "Test" group — replace when ready)
+  "-5571682187", // Group 1 (currently the "Test" group — replace when ready)
   "",
   "",
   "",
