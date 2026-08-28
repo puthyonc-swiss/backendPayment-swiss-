@@ -22,7 +22,7 @@ const GROUP_CHAT_IDS = [
   "-5571682187", // Group 1 (currently the "Test" group — replace when ready)
   "-1003336753938",
   "-1003818266123",
-  "",
+  "-5324605890",
   "",
 ];
 
